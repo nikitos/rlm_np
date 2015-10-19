@@ -24,29 +24,6 @@
 
 #include <freeradius-devel/autoconf.h>
 
-//#include <stdlib.h>
-//#include <inttypes.h>
-//#include <string.h>
-
-#ifdef HAVE_ENDIAN_H
-# include <endian.h>
-#else
-# ifdef HAVE_SYS_ENDIAN_H
-#  include <sys/endian.h>
-# else
-#  if defined(__OpenBSD__)
-#    include <sys/types.h>
-#    define be16toh(x) betoh16(x)
-#    define be32toh(x) betoh32(x)
-#    define be64toh(x) betoh64(x)
-#  endif /* __OpenBSD__ */
-# endif /* HAVE_SYS_ENDIAN_H */
-#endif /* HAVE_ENDIAN_H */
-
-#ifdef HAVE_PTHREAD_H
-# include <pthread.h>
-#endif /* HAVE_PTHREAD_H */
-
 #include <gmp.h>
 #include <mpfr.h>
 
@@ -54,7 +31,6 @@
 #include <freeradius-devel/modules.h>
 #include <freeradius-devel/modpriv.h>
 
-// #include "config.h"
 #include "rlm_sql.h"
 
 #define MAX_NAS_NAME_SIZE 64
