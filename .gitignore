@@ -30,3 +30,7 @@
 
 # Debug files
 *.dSYM/
+
+# FreeRADIUS-specific
+all.mk
+
