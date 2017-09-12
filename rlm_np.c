@@ -112,17 +112,17 @@ rlm_np_t;
 #define np_dbg(fmt, ...)         np_log(L_DBG, fmt, ##__VA_ARGS__)
 
 static const CONF_PARSER module_config[] = {
-	{ FR_CONF_OFFSET("station_id",        PW_TYPE_INTEGER, rlm_np_t, station_id),        .dflt = "0"   },
-	{ FR_CONF_OFFSET("alive_interval",    PW_TYPE_INTEGER, rlm_np_t, alive_interval),    .dflt = "60"  },
-	{ FR_CONF_OFFSET("allocate_ipv4",     PW_TYPE_BOOLEAN, rlm_np_t, do_alloc_v4),       .dflt = "yes" },
-	{ FR_CONF_OFFSET("allocate_ipv6",     PW_TYPE_BOOLEAN, rlm_np_t, do_alloc_v6),       .dflt = "no"  },
-	{ FR_CONF_OFFSET("send_drop_user",    PW_TYPE_BOOLEAN, rlm_np_t, do_drop_user),      .dflt = "no"  },
+	{ "station_id",			FR_CONF_OFFSET( PW_TYPE_INTEGER, rlm_np_t, station_id),        .dflt = "0"   },
+	{ "alive_interval",		FR_CONF_OFFSET(	PW_TYPE_INTEGER, rlm_np_t, alive_interval),    .dflt = "60"  },
+	{ "allocate_ipv4",		FR_CONF_OFFSET( PW_TYPE_BOOLEAN, rlm_np_t, do_alloc_v4),       .dflt = "yes" },
+	{ "allocate_ipv6",		FR_CONF_OFFSET( PW_TYPE_BOOLEAN, rlm_np_t, do_alloc_v6),       .dflt = "no"  },
+	{ "send_drop_user",		FR_CONF_OFFSET( PW_TYPE_BOOLEAN, rlm_np_t, do_drop_user),      .dflt = "no"  },
 #ifdef WITH_COA
-	{ FR_CONF_OFFSET("send_disconnects",  PW_TYPE_BOOLEAN, rlm_np_t, do_dm),             .dflt = "yes" },
-	{ FR_CONF_OFFSET("send_coa",          PW_TYPE_BOOLEAN, rlm_np_t, do_coa),            .dflt = "yes" },
+	{ "send_disconnects",	FR_CONF_OFFSET( PW_TYPE_BOOLEAN, rlm_np_t, do_dm),             .dflt = "yes" },
+	{ "send_coa",			FR_CONF_OFFSET( PW_TYPE_BOOLEAN, rlm_np_t, do_coa),            .dflt = "yes" },
 #endif
-	{ FR_CONF_OFFSET("sql_instance_name", PW_TYPE_STRING,  rlm_np_t, sql_instance_name), .dflt = "sql" },
-	{ FR_CONF_OFFSET("db_name",           PW_TYPE_STRING,  rlm_np_t, db_name),           .dflt = "np"  },
+	{ "sql_instance_name",	FR_CONF_OFFSET( PW_TYPE_STRING,  rlm_np_t, sql_instance_name), .dflt = "sql" },
+	{ "db_name",			FR_CONF_OFFSET( PW_TYPE_STRING,  rlm_np_t, db_name),           .dflt = "np"  },
 	CONF_PARSER_TERMINATOR
 };
 
