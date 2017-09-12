@@ -211,6 +211,112 @@ static sql_rcode_t np_select(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, rlm_sql_
 	return RLM_SQL_OK;
 }
 
+static size_t sql_escape_func(UNUSED REQUEST *request, char *out, size_t outlen, char const *in, void *arg)
+{
+	rlm_sql_handle_t	*handle = arg;
+	rlm_sql_t const		*inst = talloc_get_type_abort_const(handle->inst, rlm_sql_t);
+	size_t			len = 0;
+
+	while (in[0]) {
+		size_t utf8_len;
+
+		/*
+		 *	Allow all multi-byte UTF8 characters.
+		 */
+		utf8_len = fr_utf8_char((uint8_t const *) in, -1);
+		if (utf8_len > 1) {
+			if (outlen <= utf8_len) break;
+
+			memcpy(out, in, utf8_len);
+			in += utf8_len;
+			out += utf8_len;
+
+			outlen -= utf8_len;
+			len += utf8_len;
+			continue;
+		}
+
+		/*
+		 *	Because we register our own escape function
+		 *	we're now responsible for escaping all special
+		 *	chars in an xlat expansion or attribute value.
+		 */
+		switch (in[0]) {
+		case '\n':
+			if (outlen <= 2) break;
+			out[0] = '\\';
+			out[1] = 'n';
+
+			in++;
+			out += 2;
+			outlen -= 2;
+			len += 2;
+			break;
+
+		case '\r':
+			if (outlen <= 2) break;
+			out[0] = '\\';
+			out[1] = 'r';
+
+			in++;
+			out += 2;
+			outlen -= 2;
+			len += 2;
+			break;
+
+		case '\t':
+			if (outlen <= 2) break;
+			out[0] = '\\';
+			out[1] = 't';
+
+			in++;
+			out += 2;
+			outlen -= 2;
+			len += 2;
+			break;
+		}
+
+		/*
+		 *	Non-printable characters get replaced with their
+		 *	mime-encoded equivalents.
+		 */
+		if ((in[0] < 32) ||
+		    strchr(inst->config->allowed_chars, *in) == NULL) {
+			/*
+			 *	Only 3 or less bytes available.
+			 */
+			if (outlen <= 3) {
+				break;
+			}
+
+			snprintf(out, outlen, "=%02X", (unsigned char) in[0]);
+			in++;
+			out += 3;
+			outlen -= 3;
+			len += 3;
+			continue;
+		}
+
+		/*
+		 *	Only one byte left.
+		 */
+		if (outlen <= 1) {
+			break;
+		}
+
+		/*
+		 *	Allowed character.
+		 */
+		*out = *in;
+		out++;
+		in++;
+		outlen--;
+		len++;
+	}
+	*out = '\0';
+	return len;
+}
+
 static char *np_escape(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, char const *str)
 {
 	size_t inlen, outlen;
@@ -235,7 +341,7 @@ static char *np_escape(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, char const *st
 		return NULL;
 	}
 
-	inst->sql_inst->sql_escape_func(NULL, escaped, outlen, str, sqlsock);
+	sql_escape_func(NULL, escaped, outlen, str, sqlsock);
 	return escaped;
 }
 
