@@ -199,7 +199,8 @@ static sql_rcode_t np_select(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, rlm_sql_
 
 	if(row != NULL)
 	{
-		rc = rlm_sql_fetch_row(row, inst->sql_inst, NULL, &sqlsock);
+		rc = rlm_sql_fetch_row(inst->sql_inst, NULL, &sqlsock);
+		row = sqlsock->row;
 		if(rc != RLM_SQL_OK)
 		{
 			np_select_finish(inst, sqlsock, row);
