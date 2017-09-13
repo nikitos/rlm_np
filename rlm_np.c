@@ -77,6 +77,11 @@
 #define PW_NP_POLICY_EGRESS 2
 #define PW_NP_NAS_ID 3
 
+#include <mysql/mysql_version.h>
+#include <mysql/errmsg.h>
+#include <mysql/mysql.h>
+#include <mysql/mysqld_error.h>
+
 typedef struct rlm_np_s
 {
 	char const *name;
@@ -99,6 +104,12 @@ typedef struct rlm_np_s
 	rlm_sql_module_t *db;
 }
 rlm_np_t;
+
+typedef struct rlm_sql_mysql_conn {
+	MYSQL		db;
+	MYSQL		*sock;
+	MYSQL_RES	*result;
+} rlm_sql_mysql_conn_t;
 
 #define SQL_CFG(inst)            ((inst)->sql_inst->config)
 #define SQL_SOCK_GET(inst)       (fr_connection_get((inst)->sql_inst->pool))
@@ -211,6 +222,21 @@ static sql_rcode_t np_select(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, rlm_sql_
 	return RLM_SQL_OK;
 }
 
+static size_t sql_escape_func(UNUSED REQUEST *request, char *out, size_t outlen, char const *in, void *arg)
+{
+	size_t			inlen;
+	rlm_sql_handle_t	*handle = talloc_get_type_abort(arg, rlm_sql_handle_t);
+	rlm_sql_mysql_conn_t	*conn = handle->conn;
+
+	/* Check for potential buffer overflow */
+	inlen = strlen(in);
+	if ((inlen * 2 + 1) > outlen) return 0;
+	/* Prevent integer overflow */
+	if ((inlen * 2 + 1) <= inlen) return 0;
+
+	return mysql_real_escape_string(conn->sock, out, in, inlen);
+}
+
 static char *np_escape(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, char const *str)
 {
 	size_t inlen, outlen;
@@ -235,7 +261,7 @@ static char *np_escape(rlm_np_t *inst, rlm_sql_handle_t *sqlsock, char const *st
 		return NULL;
 	}
 
-	inst->sql_inst->sql_escape_func(NULL, escaped, outlen, str, sqlsock);
+	sql_escape_func(NULL, escaped, outlen, str, sqlsock);
 	return escaped;
 }
 
