@@ -1,2 +1,11 @@
-# rlm_np
-NetProfile FreeRADIUS module
+rlm_np Installation Instructions
+================================
+
+Preparing
+---------
+
+Building
+--------
+
+Configuration
+-------------
