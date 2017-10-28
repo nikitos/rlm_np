@@ -7,7 +7,7 @@ endif
 SOURCES		:= $(TARGETNAME).c
 
 SRC_CFLAGS	:= @mod_cflags@ -I$(top_builddir)/src/modules/rlm_sql
-TGT_LDLIBS	:= @mod_ldflags@
+TGT_LDLIBS	:= @mod_ldflags@ $(top_builddir)/build/lib/rlm_sql.la
 
 
 
