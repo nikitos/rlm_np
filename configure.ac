@@ -87,6 +87,11 @@ if test x$with_[]modname != xno; then
 	dnl # Check for libraries
 	dnl ############################################################
 
+    dnl # Chek for libgmp
+    AC_CHECK_LIB(gmp, __gmpz_init, ,
+        [AC_MSG_ERROR([GNU MP not found, see https://gmplib.org/])])
+    SMART_LIBS="$SMART_LIBS -lgmp"
+
 	dnl # Older versions of mysqlclient packages had two variants libmysqlclient
 	dnl # and libmysqlclient_r. libmysqlclient_r is the threadsafe variant that
 	dnl # is per-connection threadsafe. If that is available on the system it
