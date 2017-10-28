@@ -39,4 +39,5 @@ autom4te.cache
 config.status
 config.h
 config.log
+configure
 
