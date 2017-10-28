@@ -34,3 +34,9 @@
 # FreeRADIUS-specific
 all.mk
 
+# Autoconf and libtool output
+autom4te.cache
+config.status
+config.h
+config.log
+
