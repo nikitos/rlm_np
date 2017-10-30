@@ -492,31 +492,31 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 	}
 	if(row[0])
 		authz_aeid = strtoul(row[0], (char **) NULL, 10);
-	if(row[2])
+	if(row[2] != NULL && *row[2])
 	{
 		authz_password_ntlm = talloc_strndup(inst, row[2], 256);
 		if(authz_password_ntlm == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
-	if(row[3])
+	if(row[3] != NULL && *row[3]])
 	{
 		authz_password_crypt = talloc_strndup(inst, row[3], 256);
 		if(authz_password_crypt == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
-	if(row[4])
+	if(row[4] != NULL && *row[4])
 	{
 		authz_password_plain = talloc_strndup(inst, row[4], 256);
 		if(authz_password_plain == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
-	if(row[5])
+	if(row[5] != NULL && *row[5])
 	{
 		authz_policy_in = talloc_strndup(inst, row[5], 256);
 		if(authz_policy_in == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
-	if(row[6])
+	if(row[6] != NULL && *row[6])
 	{
 		authz_policy_eg = talloc_strndup(inst, row[6], 256);
 		if(authz_policy_eg == NULL)
@@ -591,16 +591,16 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 			if(row[1] != NULL)
 				authz_state = strtoul(row[1], (char **) NULL, 10);
 			/* Ingress policy */
-			if(row[2] != NULL)
+			if(row[2] != NULL && *row[2])
 			{
 				if(authz_policy_in)
 					talloc_free(authz_policy_in);
 				authz_policy_in = talloc_strndup(inst, row[2], 256);
-				if(authz_policy_eg == NULL)
+				if(authz_policy_in == NULL)
 					rc = RLM_MODULE_FAIL;
 			}
 			/* Egress policy */
-			if(row[3] != NULL)
+			if(row[3] != NULL && *row[3])
 			{
 				if(authz_policy_eg)
 					talloc_free(authz_policy_eg);
