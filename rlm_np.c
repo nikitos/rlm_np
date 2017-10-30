@@ -397,7 +397,9 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 	char
 		*authz_username = NULL,
 		*authz_ts = NULL,
-		*authz_password = NULL,
+		*authz_password_ntlm = NULL,
+		*authz_password_crypt = NULL,
+		*authz_password_plain = NULL,
 		*authz_policy_in = NULL,
 		*authz_policy_eg = NULL;
 	struct tm ts;
@@ -492,24 +494,36 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 		authz_aeid = strtoul(row[0], (char **) NULL, 10);
 	if(row[2])
 	{
-		authz_password = talloc_strndup(inst, row[2], 256);
-		if(authz_password == NULL)
+		authz_password_ntlm = talloc_strndup(inst, row[2], 256);
+		if(authz_password_ntlm == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
 	if(row[3])
 	{
-		authz_policy_in = talloc_strndup(inst, row[3], 256);
-		if(authz_policy_in == NULL)
+		authz_password_crypt = talloc_strndup(inst, row[3], 256);
+		if(authz_password_crypt == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
 	if(row[4])
 	{
-		authz_policy_eg = talloc_strndup(inst, row[4], 256);
-		if(authz_policy_eg == NULL)
+		authz_password_plain = talloc_strndup(inst, row[4], 256);
+		if(authz_password_plain == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
 	if(row[5])
-		authz_state = strtoul(row[5], (char **) NULL, 10);
+	{
+		authz_policy_in = talloc_strndup(inst, row[5], 256);
+		if(authz_policy_in == NULL)
+			rc = RLM_MODULE_FAIL;
+	}
+	if(row[6])
+	{
+		authz_policy_eg = talloc_strndup(inst, row[6], 256);
+		if(authz_policy_eg == NULL)
+			rc = RLM_MODULE_FAIL;
+	}
+	if(row[7])
+		authz_state = strtoul(row[7], (char **) NULL, 10);
 	np_select_finish(inst, sqlsock, &row);
 	if(rc != RLM_MODULE_OK)
 	{
@@ -549,8 +563,12 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 			SQL_SOCK_PUT(inst, sqlsock);
 			talloc_free(authz_ts);
 			talloc_free(authz_username);
-			if(authz_password)
-				talloc_free(authz_password);
+			if(authz_password_ntlm)
+				talloc_free(authz_password_ntlm);
+			if(authz_password_crypt)
+				talloc_free(authz_password_crypt);
+			if(authz_password_plain)
+				talloc_free(authz_password_plain);
 			if(authz_policy_in)
 				talloc_free(authz_policy_in);
 			if(authz_policy_eg)
@@ -587,8 +605,12 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 				np_select_finish(inst, sqlsock, &row);
 				SQL_SOCK_PUT(inst, sqlsock);
 				talloc_free(authz_username);
-				if(authz_password)
-					talloc_free(authz_password);
+			    if(authz_password_ntlm)
+			    	talloc_free(authz_password_ntlm);
+    			if(authz_password_crypt)
+			    	talloc_free(authz_password_crypt);
+    			if(authz_password_plain)
+			    	talloc_free(authz_password_plain);
 				if(authz_policy_in)
 					talloc_free(authz_policy_in);
 				if(authz_policy_eg)
@@ -607,8 +629,12 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 	/* User is auto- or manually-blocked, or there was an error in DB. */
 	if(authz_state > 0)
 	{
-		if(authz_password)
-			talloc_free(authz_password);
+	    if(authz_password_ntlm)
+	    	talloc_free(authz_password_ntlm);
+  		if(authz_password_crypt)
+	    	talloc_free(authz_password_crypt);
+  		if(authz_password_plain)
+	    	talloc_free(authz_password_plain);
 		if(authz_policy_in)
 			talloc_free(authz_policy_in);
 		if(authz_policy_eg)
@@ -618,22 +644,58 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 		return RLM_MODULE_USERLOCK;
 	}
 
-	/* Add user password for authorization by PAP/CHAP/EAP/etc. */
-	if(authz_password)
+	/* Add user ntlm password for authorization by PAP/CHAP/EAP/etc. */
+	if(authz_password_ntlm)
 	{
-		vp = radius_pair_create(request, &request->config, PW_CLEARTEXT_PASSWORD, 0);
+		vp = radius_pair_create(request, &request->config, PW_NT_PASSWORD, 0);
 		if(vp == NULL)
 		{
-			talloc_free(authz_password);
+			talloc_free(authz_password_ntlm);
 			if(authz_policy_in)
 				talloc_free(authz_policy_in);
 			if(authz_policy_eg)
 				talloc_free(authz_policy_eg);
-			np_err("np_authorize(): Error allocating memory for password A/V pair.");
+			np_err("np_authorize(): Error allocating memory for ntlm password A/V pair.");
 			return RLM_MODULE_FAIL;
 		}
-		fr_pair_value_strsteal(vp, authz_password);
-		np_dbg("np_authorize(): Added user password to config items.");
+		fr_pair_value_strsteal(vp, authz_password_ntlm);
+		np_dbg("np_authorize(): Added user ntlm password to config items.");
+    }
+
+	/* Add user crypt password for authorization by PAP/CHAP/EAP/etc. */
+	if(authz_password_crypt)
+	{
+		vp = radius_pair_create(request, &request->config, PW_CRYPT_PASSWORD, 0);
+		if(vp == NULL)
+		{
+			talloc_free(authz_password_crypt);
+			if(authz_policy_in)
+				talloc_free(authz_policy_in);
+			if(authz_policy_eg)
+				talloc_free(authz_policy_eg);
+			np_err("np_authorize(): Error allocating memory for crypt password A/V pair.");
+			return RLM_MODULE_FAIL;
+		}
+		fr_pair_value_strsteal(vp, authz_password_crypt);
+		np_dbg("np_authorize(): Added user crypt password to config items.");
+    }
+
+	/* Add user plain password for authorization by PAP/CHAP/EAP/etc. */
+	if(authz_password_plain)
+	{
+		vp = radius_pair_create(request, &request->config, PW_CLEARTEXT_PASSWORD, 0);
+		if(vp == NULL)
+		{
+			talloc_free(authz_password_plain);
+			if(authz_policy_in)
+				talloc_free(authz_policy_in);
+			if(authz_policy_eg)
+				talloc_free(authz_policy_eg);
+			np_err("np_authorize(): Error allocating memory for plain password A/V pair.");
+			return RLM_MODULE_FAIL;
+		}
+		fr_pair_value_strsteal(vp, authz_password_plain);
+		np_dbg("np_authorize(): Added user plain password to config items.");
 	}
 
 	/* Add user ingress policy for rate-limiting and firewalling. */
