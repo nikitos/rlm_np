@@ -1196,7 +1196,7 @@ static rlm_rcode_t np_accounting(void *instance, REQUEST *request)
 			if(stype->vp_integer == PW_STATUS_STOP)
 			{
 				if(np_query(inst, sqlsock,
-						"CALL acct_close_session('%s', %u, '%s')",
+						"set @accessuid = 0, @accessgid = 0, @accesslogin = '[SYSTEM]'; CALL acct_close_session('%s', %u, '%s')",
 						sid_esc, inst->station_id, ts_esc) == RLM_SQL_OK)
 				{
 					np_finish(inst, sqlsock);
