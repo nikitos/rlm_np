@@ -529,8 +529,12 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 	{
 		SQL_SOCK_PUT(inst, sqlsock);
 		talloc_free(authz_username);
-		if(authz_password)
-			talloc_free(authz_password);
+		if(authz_password_ntlm)
+			talloc_free(authz_password_ntlm);
+		if(authz_password_crypt)
+			talloc_free(authz_password_crypt);
+		if(authz_password_plain)
+			talloc_free(authz_password_plain);
 		if(authz_policy_in)
 			talloc_free(authz_policy_in);
 		if(authz_policy_eg)
@@ -547,8 +551,12 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 		{
 			SQL_SOCK_PUT(inst, sqlsock);
 			talloc_free(authz_username);
-			if(authz_password)
-				talloc_free(authz_password);
+			if(authz_password_ntlm)
+				talloc_free(authz_password_ntlm);
+			if(authz_password_crypt)
+				talloc_free(authz_password_crypt);
+			if(authz_password_plain)
+				talloc_free(authz_password_plain);
 			if(authz_policy_in)
 				talloc_free(authz_policy_in);
 			if(authz_policy_eg)
