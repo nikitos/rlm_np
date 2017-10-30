@@ -498,7 +498,7 @@ static rlm_rcode_t np_authorize(void *instance, REQUEST *request)
 		if(authz_password_ntlm == NULL)
 			rc = RLM_MODULE_FAIL;
 	}
-	if(row[3] != NULL && *row[3]])
+	if(row[3] != NULL && *row[3])
 	{
 		authz_password_crypt = talloc_strndup(inst, row[3], 256);
 		if(authz_password_crypt == NULL)
