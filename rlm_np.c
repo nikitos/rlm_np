@@ -1316,7 +1316,7 @@ static rlm_rcode_t np_post_auth(void *instance, REQUEST *request)
 	if(do_alloc)
 	{
 		if(np_select(inst, sqlsock, &row,
-				"CALL acct_alloc_ip('%s', '%s')",
+				"set @accessuid = 0, @accessgid = 0, @accesslogin = '[SYSTEM]'; CALL acct_alloc_ip('%s', '%s')",
 				nas, user_esc) == RLM_SQL_OK)
 		{
 			if(row != NULL)
